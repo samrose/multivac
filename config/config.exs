@@ -1,6 +1,7 @@
 import Config
 
-config :multivac, Multivac.MultivacLibcluster, enabled: true
+config :multivac, Multivac.MultivacLibcluster, enabled: false
+config :multivac, Multivac.BaseAgent, enabled: true
 config :logger, :console,
   format: "[$level][node:$node] $message\n", metadata: [:node]
 

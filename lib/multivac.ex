@@ -22,3 +22,24 @@ defmodule Multivac.MultivacLibcluster do
     Application.get_env(:multivac, __MODULE__, [])[:enabled] == true
   end
 end
+
+defmodule Multivac.BaseAgent do
+  use Application
+
+  def start(_type, _args) do
+    if enabled?() do
+      children = []
+      opts = [strategy: :one_for_one, name: Multivac.DummySupervisor]
+      Supervisor.start_link(children, opts)
+    else
+      # Start a dummy supervisor to avoid crashing
+      children = []
+      opts = [strategy: :one_for_one, name: Multivac.DummySupervisor]
+      Supervisor.start_link(children, opts)
+    end
+  end
+
+  defp enabled? do
+    Application.get_env(:multivac, __MODULE__, [])[:enabled] == true
+  end
+end
