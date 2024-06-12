@@ -23,7 +23,8 @@ defmodule Multivac.MixProject do
   defp deps do
     [
       {:libcluster, "~> 3.3"},
-      {:libcluster_postgres, "~> 0.1.0"}
+      {:libcluster_postgres, "~> 0.1.0"},
+      {:oban, "~> 2.17"}
     ]
   end
 end

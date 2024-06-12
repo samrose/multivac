@@ -28,7 +28,10 @@ defmodule Multivac.BaseAgent do
 
   def start(_type, _args) do
     if enabled?() do
-      children = []
+      children = [
+        Multivac.Repo,
+        {Oban, Application.get_env(:multivac, Oban)}
+      ]
       opts = [strategy: :one_for_one, name: Multivac.DummySupervisor]
       Supervisor.start_link(children, opts)
     else
