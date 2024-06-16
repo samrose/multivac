@@ -27,19 +27,20 @@ defmodule Multivac.TableListener do
   end
 
   defp handle_table_change(payload) do
+    # Decode the payload if necessary
     %{"args" => %{"some_field" => value}} = Jason.decode!(payload)
 
-    job_changeset = Job.new(%{
-      worker: "Multivac.SomeWorker",
-      args: %{"value" => value},
-      queue: "default",
-      state: "available",
-      scheduled_at: DateTime.utc_now()
-    })
+    %{
+      "args" => %{
+        "some_field" => value
+      }
+    }
+    |> Job.new(worker: "Multivac.SomeWorker", queue: "default", state: "available", scheduled_at: DateTime.utc_now())
+    |> Oban.insert()
 
-    case Oban.insert(job_changeset) do
-      {:ok, _job} -> :ok
-      {:error, changeset} -> IO.inspect(changeset, label: "Failed to insert job")
-    end
+    # case Repo.insert(job_changeset) do
+    #   {:ok, _job} -> :ok
+    #   {:error, changeset} -> IO.inspect(changeset, label: "Failed to insert job")
+    # end
   end
 end
