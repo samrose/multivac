@@ -1,27 +1,5 @@
 import Config
 
-config :multivac, Multivac.MultivacLibcluster, enabled: false
-config :multivac, Multivac.BaseAgent, enabled: true
-config :logger, :console,
-  format: "[$level][node:$node] $message\n", metadata: [:node]
-
-config :libcluster, topologies: [
-  postgres: [
-    strategy: LibclusterPostgres.Strategy,
-    config: [
-      hostname: "localhost",
-      username: "postgres",
-      password: "postgres",
-      database: "postgres",
-      port: 54322,
-      parameters: [],
-      channel_name: "cluster"
-    ]
-  ]
-]
-
-
-
 config :multivac, Multivac.Repo,
   database: "postgres",
   username: "postgres",
@@ -34,10 +12,8 @@ config :multivac, ecto_repos: [Multivac.Repo]
 
 config :multivac, Oban,
   repo: Multivac.Repo,
-  plugins: [Oban.Plugins.Pruner],
+  plugins: [{Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7}],
   queues: [default: 10]
 
-config :multivac, Oban,
-  repo: Multivac.Repo,
-  plugins: [Oban.Plugins.Pruner],
-  queues: [default: 10]
+# Configure the role for the application
+config :multivac, role: System.get_env("ROLE", "server")
