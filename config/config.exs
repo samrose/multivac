@@ -1,27 +1,5 @@
 import Config
 
-config :multivac, Multivac.MultivacLibcluster, enabled: false
-config :multivac, Multivac.BaseAgent, enabled: true
-config :logger, :console,
-  format: "[$level][node:$node] $message\n", metadata: [:node]
-
-config :libcluster, topologies: [
-  postgres: [
-    strategy: LibclusterPostgres.Strategy,
-    config: [
-      hostname: "localhost",
-      username: "postgres",
-      password: "postgres",
-      database: "postgres",
-      port: 54322,
-      parameters: [],
-      channel_name: "cluster"
-    ]
-  ]
-]
-
-
-
 config :multivac, Multivac.Repo,
   database: "postgres",
   username: "postgres",
@@ -32,12 +10,29 @@ config :multivac, Multivac.Repo,
 
 config :multivac, ecto_repos: [Multivac.Repo]
 
-config :multivac, Oban,
-  repo: Multivac.Repo,
-  plugins: [Oban.Plugins.Pruner],
-  queues: [default: 10]
+role = System.get_env("ROLE") || "server"
 
-config :multivac, Oban,
-  repo: Multivac.Repo,
-  plugins: [Oban.Plugins.Pruner],
-  queues: [default: 10]
+oban_config =
+  case role do
+    "worker" ->
+      [
+        repo: Multivac.Repo,
+        queues: [default: 10],
+        plugins: []
+      ]
+
+    "server" ->
+      [
+        repo: Multivac.Repo,
+        plugins: [Oban.Plugins.Pruner],
+        queues: []
+      ]
+
+    _ ->
+      raise "Unknown role: #{role}"
+  end
+
+config :multivac, Oban, oban_config
+
+# Configure the role for the application
+config :multivac, role: System.get_env("ROLE", "server")
