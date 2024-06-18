@@ -37,10 +37,5 @@ defmodule Multivac.TableListener do
     }
     |> Job.new(worker: "Multivac.SomeWorker", queue: "default", state: "available", scheduled_at: DateTime.utc_now())
     |> Oban.insert()
-
-    # case Repo.insert(job_changeset) do
-    #   {:ok, _job} -> :ok
-    #   {:error, changeset} -> IO.inspect(changeset, label: "Failed to insert job")
-    # end
   end
 end
