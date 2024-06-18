@@ -10,10 +10,29 @@ config :multivac, Multivac.Repo,
 
 config :multivac, ecto_repos: [Multivac.Repo]
 
-config :multivac, Oban,
-  repo: Multivac.Repo,
-  plugins: [{Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7}],
-  queues: [default: 10]
+role = System.get_env("ROLE") || "server"
+
+oban_config =
+  case role do
+    "worker" ->
+      [
+        repo: Multivac.Repo,
+        queues: [default: 10],
+        plugins: []
+      ]
+
+    "server" ->
+      [
+        repo: Multivac.Repo,
+        plugins: [Oban.Plugins.Pruner],
+        queues: []
+      ]
+
+    _ ->
+      raise "Unknown role: #{role}"
+  end
+
+config :multivac, Oban, oban_config
 
 # Configure the role for the application
 config :multivac, role: System.get_env("ROLE", "server")
