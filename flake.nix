@@ -64,7 +64,7 @@
     devShell = forAllSystems (system: let
       pkgs = nixpkgs.legacyPackages.${system};
       mkShell = nixpkgs.legacyPackages.${system}.mkShell;
-      basePackages = with pkgs; [alejandra bat erlang_26 elixir_1_16 docker-compose entr gnumake overmind jq mix2nix graphviz inotify-tools python3 unixtools.netstat];
+      basePackages = with pkgs; [alejandra bat erlang_26 elixir_1_16 docker-compose entr gnumake overmind jq mix2nix graphviz python3 unixtools.netstat];
       #propagatedPackages = with pkgs; [ google-chrome ];
       hooks = ''
         source .env
