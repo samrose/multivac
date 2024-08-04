@@ -1,4 +1,4 @@
-defmodule Multivac.TableListener do
+defmodule Multivac.Listener do
   use GenServer
   alias Multivac.Repo
   alias Oban.Job
@@ -35,7 +35,7 @@ defmodule Multivac.TableListener do
         "some_field" => value
       }
     }
-    |> Job.new(worker: "Multivac.SomeWorker", queue: "default", state: "available", scheduled_at: DateTime.utc_now())
+    |> Job.new(worker: "Multivac.Worker", queue: "default", state: "available", scheduled_at: DateTime.utc_now())
     |> Oban.insert()
   end
 end

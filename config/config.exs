@@ -1,11 +1,11 @@
 import Config
 
 config :multivac, Multivac.Repo,
-  database: "postgres",
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  port: 54322,
+  database: System.get_env("DATABASE_NAME"),
+  username: System.get_env("DATABASE_USER"),
+  password: System.get_env("DATABASE_PASSWORD"),
+  hostname: System.get_env("DATABASE_HOST"),
+  port: System.get_env("DATABASE_PORT"),
   pool_size: 10
 
 config :multivac, ecto_repos: [Multivac.Repo]
@@ -18,6 +18,7 @@ oban_config =
       [
         repo: Multivac.Repo,
         queues: [default: 10],
+        peer: Oban.Peers.Postgres,
         plugins: []
       ]
 
@@ -25,6 +26,7 @@ oban_config =
       [
         repo: Multivac.Repo,
         plugins: [Oban.Plugins.Pruner],
+        peer: Oban.Peers.Postgres,
         queues: []
       ]
 

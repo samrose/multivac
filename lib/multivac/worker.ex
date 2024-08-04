@@ -1,4 +1,4 @@
-defmodule Multivac.SomeWorker do
+defmodule Multivac.Worker do
   use Oban.Worker, queue: :default
 
   @impl Oban.Worker

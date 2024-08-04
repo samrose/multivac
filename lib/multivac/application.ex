@@ -17,7 +17,7 @@ defmodule Multivac.Application do
     children =
       case role do
         "server" ->
-          children ++ [Multivac.TableListener, Multivac.JobStatusListener]
+          children ++ [Multivac.Listener, Multivac.JobStatusListener]
 
         "worker" ->
           children
