@@ -10,12 +10,12 @@ let
   packages = with beamPackages; with self; {
     db_connection = buildMix rec {
       name = "db_connection";
-      version = "2.6.0";
+      version = "2.7.0";
 
       src = fetchHex {
         pkg = "db_connection";
         version = "${version}";
-        sha256 = "c2f992d15725e721ec7fbc1189d4ecdb8afef76648c746a8e1cad35e3b8a35f3";
+        sha256 = "dcf08f31b2701f857dfc787fbad78223d61a32204f217f15e881dd93e4bdd3ff";
       };
 
       beamDeps = [ telemetry ];
@@ -34,53 +34,66 @@ let
       beamDeps = [];
     };
 
+    ecto = buildMix rec {
+      name = "ecto";
+      version = "3.11.2";
+
+      src = fetchHex {
+        pkg = "ecto";
+        version = "${version}";
+        sha256 = "3c38bca2c6f8d8023f2145326cc8a80100c3ffe4dcbd9842ff867f7fc6156c65";
+      };
+
+      beamDeps = [ decimal jason telemetry ];
+    };
+
+    ecto_sql = buildMix rec {
+      name = "ecto_sql";
+      version = "3.11.3";
+
+      src = fetchHex {
+        pkg = "ecto_sql";
+        version = "${version}";
+        sha256 = "e5f36e3d736b99c7fee3e631333b8394ade4bafe9d96d35669fca2d81c2be928";
+      };
+
+      beamDeps = [ db_connection ecto postgrex telemetry ];
+    };
+
     jason = buildMix rec {
       name = "jason";
-      version = "1.4.1";
+      version = "1.4.4";
 
       src = fetchHex {
         pkg = "jason";
         version = "${version}";
-        sha256 = "fbb01ecdfd565b56261302f7e1fcc27c4fb8f32d56eab74db621fc154604a7a1";
+        sha256 = "c5eb0cab91f094599f94d55bc63409236a8ec69a21a67814529e8d5f6cc90b3b";
       };
 
       beamDeps = [ decimal ];
     };
 
-    libcluster = buildMix rec {
-      name = "libcluster";
-      version = "3.3.3";
+    oban = buildMix rec {
+      name = "oban";
+      version = "2.18.0";
 
       src = fetchHex {
-        pkg = "libcluster";
+        pkg = "oban";
         version = "${version}";
-        sha256 = "7c0a2275a0bb83c07acd17dab3c3bfb4897b145106750eeccc62d302e3bdfee5";
+        sha256 = "aace1eff6f8227ae38d4274af967d96f051c2f0a5152f2ef9809dd1f97866745";
       };
 
-      beamDeps = [ jason ];
-    };
-
-    libcluster_postgres = buildMix rec {
-      name = "libcluster_postgres";
-      version = "0.1.2";
-
-      src = fetchHex {
-        pkg = "libcluster_postgres";
-        version = "${version}";
-        sha256 = "b957ca609ec5dcddc37342a756bfc027029225bfb089bf0b32974f0ec0cac237";
-      };
-
-      beamDeps = [ libcluster postgrex ];
+      beamDeps = [ ecto_sql jason postgrex telemetry ];
     };
 
     postgrex = buildMix rec {
       name = "postgrex";
-      version = "0.17.3";
+      version = "0.19.0";
 
       src = fetchHex {
         pkg = "postgrex";
         version = "${version}";
-        sha256 = "946cf46935a4fdca7a81448be76ba3503cff082df42c6ec1ff16a4bdfbfb098d";
+        sha256 = "dba2d2a0a8637defbf2307e8629cb2526388ba7348f67d04ec77a5d6a72ecfae";
       };
 
       beamDeps = [ db_connection decimal jason ];

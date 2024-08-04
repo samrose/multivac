@@ -27,3 +27,4 @@ libcluster_postgres-*.tar
 result
 .nix-mix
 .nix-hex
+.env
