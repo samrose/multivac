@@ -64,7 +64,7 @@
     devShell = forAllSystems (system: let
       pkgs = nixpkgs.legacyPackages.${system};
       mkShell = nixpkgs.legacyPackages.${system}.mkShell;
-      basePackages = with pkgs; [alejandra bat erlang_26 elixir_1_16 docker-compose entr gnumake overmind jq mix2nix graphviz python3 unixtools.netstat];
+      basePackages = with pkgs; [alejandra bat erlang_27 elixir_1_17 docker-compose entr gnumake overmind jq mix2nix graphviz python3 unixtools.netstat];
       #propagatedPackages = with pkgs; [ google-chrome ];
       hooks = ''
         source .env
@@ -78,7 +78,7 @@
         # make hex from Nixpkgs available
         # `mix local.hex` will install hex into MIX_HOME and should take precedence
         export PATH=$MIX_HOME/bin:$HEX_HOME/bin:$PATH
-        export LANG=C.UTF-8
+        #export LANG=C.UTF-8
         # keep your shell history in iex
         export ERL_AFLAGS="-kernel shell_history enabled"
       '';
