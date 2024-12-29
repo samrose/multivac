@@ -3,25 +3,19 @@ defmodule MultivacAgent.JobProcessor do
   require Logger
   alias MultivacAgent.{Repo, Job}
 
-  @poll_interval 1000 # 1 second
-
   def start_link(_) do
     GenServer.start_link(__MODULE__, %{})
   end
 
   def init(state) do
-    schedule_poll()
+    send(self(), :process)
     {:ok, state}
   end
 
-  def handle_info(:poll, state) do
+  def handle_info(:process, state) do
     process_next_job()
-    schedule_poll()
+    send(self(), :process)
     {:noreply, state}
-  end
-
-  defp schedule_poll do
-    Process.send_after(self(), :poll, @poll_interval)
   end
 
   defp process_next_job do

@@ -3,7 +3,7 @@ defmodule MultivacAgent.Job do
 
   def poll_job do
     case Repo.query(
-      "SELECT * FROM pgmq.read('job_queue', 30, 1)",
+      "SELECT * FROM pgmq.read_with_poll('job_queue', 30, 1, 5, 100)",
       []
     ) do
       {:ok, %{rows: [[msg_id, _read_ct, _enqueued_at, _vt, message]]}} ->
