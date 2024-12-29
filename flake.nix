@@ -2,8 +2,7 @@
   description = "Your application flake";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
   };
 
   outputs = {
@@ -61,7 +60,7 @@
         alejandra
         bat
         erlang_27
-        elixir_1_17
+        elixir_1_18
         docker-compose
         entr
         gnumake
@@ -71,6 +70,7 @@
         graphviz
         python3
         unixtools.netstat
+        dbmate
       ];
       hooks = ''
         source .env

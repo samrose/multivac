@@ -1,11 +1,12 @@
 import Config
 
 config :multivac_agent, MultivacAgent.Repo,
-  database: "multivac_agent_repo",
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost"
-
+  database: System.get_env("PGDATABASE", "postgres"),
+  username: System.get_env("PGUSER", "postgres"),
+  password: System.get_env("PGPASSWORD"),
+  hostname: System.get_env("PGHOST", "db.lhyicfpzonckkfgmmmrl.supabase.co"),
+  port: String.to_integer(System.get_env("PGPORT", "5432"))
+  
 config :multivac_agent, ecto_repos: [MultivacAgent.Repo]
 
 # Import environment specific config. This must remain at the bottom
