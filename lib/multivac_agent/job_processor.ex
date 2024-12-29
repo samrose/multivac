@@ -3,57 +3,54 @@ defmodule MultivacAgent.JobProcessor do
   require Logger
   alias MultivacAgent.{Repo, Job}
 
+  @poll_interval 1000 # 1 second
+
   def start_link(_) do
     GenServer.start_link(__MODULE__, %{})
   end
 
   def init(state) do
-    {:ok, _} = Postgrex.Notifications.start_link(MultivacAgent.Repo.config())
-    |> tap(fn {:ok, pid} -> Postgrex.Notifications.listen(pid, "job_changes") end)
-
-    Logger.info("Listening for job_changes notifications")
+    schedule_poll()
     {:ok, state}
   end
 
-  def handle_info({:notification, _pid, _ref, "job_changes", payload}, state) do
-    Logger.info("Received notification on job_changes channel: #{payload}")
-    [operation, job_id] = String.split(payload)
-    process_job_change(operation, job_id)
+  def handle_info(:poll, state) do
+    process_next_job()
+    schedule_poll()
     {:noreply, state}
   end
 
-  defp process_job_change("INSERT", job_id) do
-    job_id
-    |> String.to_integer()
-    |> Job.get_job!()
-    |> process_job()
+  defp schedule_poll do
+    Process.send_after(self(), :poll, @poll_interval)
   end
 
-  defp process_job_change("UPDATE", job_id) do
-    job_id
-    |> String.to_integer()
-    |> Job.get_job!()
-    |> maybe_process_job()
-  end
-
-  defp process_job_change("DELETE", _job_id) do
-    # Handle delete operation if needed
-    Logger.info("Job deleted")
-  end
-
-  defp maybe_process_job(job) do
-    if job.status == "pending" do
-      process_job(job)
-    end
-  end
-
-  defp process_job(job) do
-    case Job.mark_job_as_running(job) do
-      {:ok, job} ->
-        result = execute_command(job.command)
-        Job.mark_job_as_completed(job, result)
-      {:error, _changeset} ->
-        Logger.error("Failed to mark job as running: #{job.id}")
+  defp process_next_job do
+    case Job.poll_job() do
+      {:ok, %{msg_id: msg_id, data: data}} when not is_nil(data) ->
+        Logger.info("Processing job #{msg_id}: #{inspect(data)}")
+        try do
+          result = execute_command(data["command"])
+          Logger.info("Job #{msg_id} completed successfully: #{inspect(result)}")
+          case Job.delete_job(msg_id) do
+            {:ok, _} ->
+              Logger.info("Successfully deleted job #{msg_id}")
+            {:error, error} ->
+              Logger.error("Failed to delete job #{msg_id}: #{inspect(error)}")
+          end
+        rescue
+          e ->
+            Logger.error("Error processing job #{msg_id}: #{inspect(e)}")
+            case Job.archive_job(msg_id) do
+              {:ok, _} ->
+                Logger.info("Archived failed job #{msg_id}")
+              {:error, error} ->
+                Logger.error("Failed to archive job #{msg_id}: #{inspect(error)}")
+            end
+        end
+      {:ok, nil} ->
+        :ok
+      {:error, error} ->
+        Logger.error("Error polling job: #{inspect(error)}")
     end
   end
 
@@ -64,7 +61,7 @@ defmodule MultivacAgent.JobProcessor do
     rescue
       e ->
         Logger.error("Error executing command: #{inspect(e)}")
-        "Error: #{inspect(e)}"
+        raise e
     end
   end
 end

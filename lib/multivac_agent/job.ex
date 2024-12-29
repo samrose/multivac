@@ -1,70 +1,34 @@
-# File: lib/multivac_agent/job.ex
-
 defmodule MultivacAgent.Job do
-  use Ecto.Schema
-  import Ecto.Changeset
-  import Ecto.Query
   alias MultivacAgent.Repo
 
-  schema "jobs" do
-    field :command, :string
-    field :status, :string, default: "pending"
-    field :result, :string
-
-    timestamps(type: :utc_datetime)
+  def poll_job do
+    case Repo.query(
+      "SELECT * FROM pgmq.read('job_queue', 30, 1)",
+      []
+    ) do
+      {:ok, %{rows: [[msg_id, _read_ct, _enqueued_at, _vt, message]]}} ->
+        {:ok, %{msg_id: msg_id, data: message}}
+      {:ok, %{rows: []}} ->
+        {:ok, nil}
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
-  @doc false
-  def changeset(job, attrs) do
-    job
-    |> cast(attrs, [:command, :status, :result])
-    |> validate_required([:command])
-    |> validate_inclusion(:status, ["pending", "running", "completed", "failed"])
-    |> validate_length(:status, max: 20)
+  def delete_job(msg_id) do
+    Repo.query("SELECT pgmq.delete('job_queue', $1::bigint)", [msg_id])
   end
 
-  def create_job(attrs \\ %{}) do
-    %MultivacAgent.Job{}
-    |> changeset(attrs)
-    |> Repo.insert()
+  def archive_job(msg_id) do
+    Repo.query("SELECT pgmq.archive('job_queue', $1::bigint)", [msg_id])
   end
 
-  def get_job!(id), do: Repo.get!(MultivacAgent.Job, id)
-
-  def list_jobs do
-    Repo.all(MultivacAgent.Job)
-  end
-
-  def list_pending_jobs(limit \\ 10) do
-    MultivacAgent.Job
-    |> where([j], j.status == "pending")
-    |> limit(^limit)
-    |> Repo.all()
-  end
-
-  def update_job(%MultivacAgent.Job{} = job, attrs) do
-    job
-    |> changeset(attrs)
-    |> Repo.update()
-  end
-
-  def delete_job(%MultivacAgent.Job{} = job) do
-    Repo.delete(job)
-  end
-
-  def change_job(%MultivacAgent.Job{} = job, attrs \\ %{}) do
-    changeset(job, attrs)
-  end
-
-  def mark_job_as_running(%MultivacAgent.Job{} = job) do
-    update_job(job, %{status: "running"})
-  end
-
-  def mark_job_as_completed(%MultivacAgent.Job{} = job, result) do
-    update_job(job, %{status: "completed", result: result})
-  end
-
-  def mark_job_as_failed(%MultivacAgent.Job{} = job, error_message) do
-    update_job(job, %{status: "failed", result: error_message})
+  def get_queue_stats do
+    case Repo.query("SELECT * FROM pgmq.metrics('job_queue')") do
+      {:ok, %{rows: [row], columns: columns}} ->
+        Enum.zip(columns, row) |> Map.new()
+      error ->
+        {:error, error}
+    end
   end
 end
