@@ -15,7 +15,7 @@ def deps do
 end
 ```
 
-(Create a project on https://supabasecom)
+(Create a project on https://supabasecom and enable pgmq)
 
 ## Init
 ```bash
