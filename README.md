@@ -22,6 +22,7 @@ end
 nix develop
 dbmate up
 SELECT pgmq.send('job_queue', '{"command": "echo hello"}'::jsonb);
+```
 ## Run in dev
 
 ```bash
